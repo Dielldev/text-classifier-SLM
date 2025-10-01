@@ -1,4 +1,4 @@
-# Text Classification API
+# Text Classification Small Machine Learning Project
 
 A machine learning REST API for text classification.
 
@@ -27,8 +27,8 @@ This project uses two machine learning models (Logistic Regression + Naive Bayes
 
 ## Dataset
 
-**Source:** [AG News Classification Dataset](https://www.kaggle.com/datasets/amananandrai/ag-news-classification-dataset)
-
+**Source:** [AG News Classification Dataset - Kaggle](https://www.kaggle.com/datasets/amananandrai/ag-news-classification-dataset)
+**Source:** [AG News Classification Dataset - Hugging Face](https://huggingface.co/datasets/sh0416/ag_news)
 - **Training samples:** 120,000
 - **Test samples:** 7,600
 - **Features:** News article descriptions
@@ -41,7 +41,7 @@ This project uses two machine learning models (Logistic Regression + Naive Bayes
 
 ```bash
 # Clone and navigate to the repository
-git clone <repository-url>
+git clone <"https://github.com/Dielldev/text-classifier-SLM">
 cd text-classifier-SLM
 
 # Create virtual environment
