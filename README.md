@@ -91,13 +91,13 @@ curl -X POST "http://localhost:8000/predict" \
 
 ## Features
 
-- ✅ Dual model prediction (Logistic Regression + Naive Bayes)
-- ✅ Ensemble averaging for improved accuracy
-- ✅ TF-IDF vectorization
-- ✅ Automatic text preprocessing
-- ✅ Confidence scores for all categories
-- ✅ Interactive API documentation (Swagger UI)
-- ✅ Health check endpoint
+-  Dual model prediction (Logistic Regression + Naive Bayes)
+-  Ensemble averaging for improved accuracy
+-  TF-IDF vectorization
+-  Automatic text preprocessing
+-  Confidence scores for all categories
+-  Interactive API documentation (Swagger UI)
+-  Health check endpoint
 
 ## Model Details
 
