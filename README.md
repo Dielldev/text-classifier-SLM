@@ -63,31 +63,6 @@ python app.py
 
 Access the interactive API documentation at: http://localhost:8000/docs
 
-##  API Usage
-
-### Predict Endpoint
-
-```bash
-curl -X POST "http://localhost:8000/predict" \
-     -H "Content-Type: application/json" \
-     -d '{"text": "NASA launches new Mars rover"}'
-```
-
-**Response:**
-```json
-{
-  "input_text": "NASA launches new Mars rover",
-  "logistic_regression_prediction": "Sci/Tech",
-  "naive_bayes_prediction": "Sci/Tech",
-  "final_prediction": "Sci/Tech",
-  "confidence_scores": {
-    "World": 0.10,
-    "Sports": 0.05,
-    "Business": 0.15,
-    "Sci/Tech": 0.70
-  }
-}
-```
 
 ## Features
 
