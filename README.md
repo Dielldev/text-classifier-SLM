@@ -110,14 +110,9 @@ curl -X POST "http://localhost:8000/predict" \
 
 ### Why Logistic Regression + Naive Bayes Ensemble?
 
-**Logistic Regression** excels at handling feature correlations and provides reliable probability estimates, while **Naive Bayes** is fast and works exceptionally well with high-dimensional text data despite its "naive" independence assumption.
+**Logistic Regression** excels at handling feature correlations and provides reliable probability estimates with "91% accuracy score", while **Naive Bayes** is fast and works exceptionally well with high-dimensional text data despite its "naive" independence assumption with a "89 accuracy score".
 
-**Why Ensemble Performs Better:**
-- **Reduces Overfitting:** Averaging predictions from both models generalizes better than either alone
-- **Balances Strengths:** Combines Logistic Regression's sophistication with Naive Bayes' efficiency
-- **Increases Accuracy:** Typically achieves 2-5% higher accuracy than individual models
-
-*For single model deployment, **Logistic Regression** generally performs better on text classification tasks due to its ability to handle feature correlations in TF-IDF vectors.*
+For single model deployment, **Logistic Regression** generally performs better on text classification tasks due to its ability to handle feature correlations in TF-IDF vectors.
 
 ## Dependencies
 
