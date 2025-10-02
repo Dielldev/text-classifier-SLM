@@ -1,4 +1,4 @@
-# Text Classification Small Machine Learning Project
+# Text Classification Project
 
 A machine learning REST API for text classification.
 
