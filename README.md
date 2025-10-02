@@ -106,7 +106,7 @@ curl -X POST "http://localhost:8000/predict" \
 - **Models:** Logistic Regression (max_iter=200) + Multinomial Naive Bayes
 - **Ensemble Method:** Average probability distribution
 
-## Model Comparison & Ensemble Benefits
+## Model Comparison 
 
 ### Why Logistic Regression + Naive Bayes Ensemble?
 
