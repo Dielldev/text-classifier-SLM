@@ -5,14 +5,23 @@ A machine learning REST API for text classification.
 ## Project Structure
 
 ```
-├── app.py              # FastAPI application
-├── main.py             # Core project logic, model comparison & confusion matrix
+text-classifier-SLM/
+├── app.py              # FastAPI REST API application
+├── main.py             # Model training, evaluation & comparison
+├── config.py           # Configuration and constants
+├── utils.py            # Text preprocessing utilities
 ├── requirements.txt    # Python dependencies
-├── .gitignore         # Git ignore rules
 ├── README.md          # Project documentation
-├── train.csv          # Training data
-├── test.csv           # Test data
-└── env/               # Virtual environment
+├── data/              # Dataset directory
+│   ├── train.csv      # Training data (120,000 samples)
+│   └── test.csv       # Test data (7,600 samples)
+├── models/            # Saved model files
+│   ├── tfidf_vectorizer.pkl
+│   ├── logistic_regression_model.pkl
+│   └── naive_bayes_model.pkl
+├── notebooks/         # Jupyter notebooks
+│   └── original-logic.ipynb
+└── env/              # Virtual environment
 ```
 
 ## Overview
@@ -40,11 +49,11 @@ This project uses two machine learning models (Logistic Regression + Naive Bayes
 ### Installation
 
 ```bash
-# Clone and navigate to the repository
-git clone <"https://github.com/Dielldev/text-classifier-SLM">
+# Clone the repository
+git clone https://github.com/Dielldev/text-classifier-SLM
 cd text-classifier-SLM
 
-# Create virtual environment
+# Create and activate virtual environment
 python -m venv env
 
 # Activate virtual environment
@@ -53,9 +62,29 @@ source env/Scripts/activate  # Windows
 
 # Install dependencies
 pip install -r requirements.txt
+
+# Download NLTK stopwords (required for preprocessing)
+python -c "import nltk; nltk.download('stopwords')"
 ```
 
-### Run the API
+### Training the Models
+
+Before running the API, you must train and save the models:
+
+```bash
+python main.py
+```
+
+This will:
+- Load training and test data from `data/` directory
+- Preprocess the text data
+- Train both Logistic Regression and Naive Bayes models
+- Display accuracy scores and classification reports
+- Show confusion matrices for both models
+- Save all models to `models/` directory
+- Test the prediction function with a sample text
+
+### Running the API
 
 ```bash
 python app.py

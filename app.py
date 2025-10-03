@@ -1,21 +1,19 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
-import pandas as pd
-import re
-import nltk
-from nltk.corpus import stopwords
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.linear_model import LogisticRegression
-from sklearn.naive_bayes import MultinomialNB
+import pickle
+import os
 import uvicorn
 
+from utils import preprocess
+import config
 
-nltk.download('stopwords')
+app = FastAPI(title=config.API_TITLE, version=config.API_VERSION)
 
-app = FastAPI(title="Text Classification API", version="1.0.0")
 
-categories = {1: 'World', 2: 'Sports', 3: 'Business', 4: 'Sci/Tech'}
+vectorizer = None
+clf = None
+nb_model = None
 
 
 class TextInput(BaseModel):
@@ -29,68 +27,103 @@ class PredictionResponse(BaseModel):
     confidence_scores: dict
 
 
-def preprocess(text):
-    text = str(text).lower()
-    text = re.sub(r'[^a-z\s]', '', text)
-    stop_words = set(stopwords.words('english'))
-    text = ' '.join([word for word in text.split() if word not in stop_words])
-    return text
-
-
 def load_models():
-    """Load and train models on startup"""
+    """Load pre-trained models from disk"""
     global vectorizer, clf, nb_model
     
-  
-    train_df = pd.read_csv('train.csv')
-    train_df['clean_text'] = train_df['Description'].apply(preprocess)
-    
-    vectorizer = TfidfVectorizer()
-    X_train = vectorizer.fit_transform(train_df['clean_text'])
-    y_train = train_df['Class Index']
-    
-    clf = LogisticRegression(max_iter=200)
-    clf.fit(X_train, y_train)
-    
-    nb_model = MultinomialNB()
-    nb_model.fit(X_train, y_train)
-    
-    print("Models loaded and trained successfully!")
+    try:
+        # Check if model files exist
+        if not os.path.exists(config.VECTORIZER_PATH):
+            raise FileNotFoundError(
+                f"Vectorizer not found at {config.VECTORIZER_PATH}. "
+                "Please run main.py first to train and save models."
+            )
+        if not os.path.exists(config.LOGISTIC_REGRESSION_PATH):
+            raise FileNotFoundError(
+                f"Logistic Regression model not found at {config.LOGISTIC_REGRESSION_PATH}. "
+                "Please run main.py first to train and save models."
+            )
+        if not os.path.exists(config.NAIVE_BAYES_PATH):
+            raise FileNotFoundError(
+                f"Naive Bayes model not found at {config.NAIVE_BAYES_PATH}. "
+                "Please run main.py first to train and save models."
+            )
+        
+        # Load the vectorizer
+        with open(config.VECTORIZER_PATH, 'rb') as f:
+            vectorizer = pickle.load(f)
+        
+        # Load Logistic Regression model
+        with open(config.LOGISTIC_REGRESSION_PATH, 'rb') as f:
+            clf = pickle.load(f)
+        
+        # Load Naive Bayes model
+        with open(config.NAIVE_BAYES_PATH, 'rb') as f:
+            nb_model = pickle.load(f)
+        
+        print("✓ Models loaded successfully from disk!")
+        print(f"  - Vectorizer: {config.VECTORIZER_PATH}")
+        print(f"  - Logistic Regression: {config.LOGISTIC_REGRESSION_PATH}")
+        print(f"  - Naive Bayes: {config.NAIVE_BAYES_PATH}")
+        
+    except FileNotFoundError as e:
+        print(f"\n❌ ERROR: {str(e)}")
+        raise
+    except Exception as e:
+        print(f"\n❌ ERROR loading models: {str(e)}")
+        raise
 
 
-#  The event handler to load the models when the API starts 
 @app.on_event("startup")
 async def startup_event():
     """Load models when the API starts"""
-    load_models()
+    try:
+        load_models()
+    except Exception as e:
+        print("The API will start but /predict endpoint will not work.")
+     
 
 
-# This this basically ridirects the root URL to the API documentation page
 @app.get("/")
 async def root():
     """Redirect to API documentation"""
     return RedirectResponse(url="/docs")
 
 
-# To check if the APi is working fine
 @app.get("/health")
 async def health_check():
-    # Check if models are initialized, return error if not
-    if vectorizer is None or clf is None or nb_model is None:
-        raise HTTPException(status_code=503, detail="Models not loaded")
-    return {"status": "healthy", "models_loaded": True}
+    
+    models_loaded = vectorizer is not None and clf is not None and nb_model is not None
+    
+    if not models_loaded:
+        return {
+            "status": "degraded",
+            "models_loaded": False,
+            "message": "Models not loaded. Run 'python main.py' to train and save models."
+        }
+    
+    return {
+        "status": "healthy",
+        "models_loaded": True,
+        "message": "All systems operational"
+    }
 
 
-# Main prediction Function 
 @app.post("/predict", response_model=PredictionResponse)
 async def predict_category(input_data: TextInput):
-    """
-    Predict the category of input text using both Logistic Regression and Naive Bayes models.
-    Returns predictions from both models and a final combined prediction.
-    """
     
     if vectorizer is None or clf is None or nb_model is None:
-        raise HTTPException(status_code=503, detail="Models not loaded")
+        raise HTTPException(
+            status_code=503,
+            detail="Models not loaded. Please run 'python main.py' to train and save models first."
+        )
+    
+
+    if not input_data.text or not input_data.text.strip():
+        raise HTTPException(status_code=400, detail="Input text cannot be empty")
+    
+    if len(input_data.text) > 10000:
+        raise HTTPException(status_code=400, detail="Input text too long (max 10000 characters)")
     
     try:
       
@@ -108,26 +141,25 @@ async def predict_category(input_data: TextInput):
         final_pred = avg_prob.argmax() + 1
         
         confidence_scores = {
-            categories[i+1]: float(avg_prob[i]) 
+            config.CATEGORIES[i+1]: float(avg_prob[i]) 
             for i in range(len(avg_prob))
         }
         
-        #  This is the responses we get, teh model name and responds and also the confidence scores
         return PredictionResponse(
             input_text=input_data.text,
-            logistic_regression_prediction=categories[pred_lr],
-            naive_bayes_prediction=categories[pred_nb],
-            final_prediction=categories[final_pred],
+            logistic_regression_prediction=config.CATEGORIES[pred_lr],
+            naive_bayes_prediction=config.CATEGORIES[pred_nb],
+            final_prediction=config.CATEGORIES[final_pred],
             confidence_scores=confidence_scores
         )
     
+    except HTTPException:
+        raise
     except Exception as e:
-       # This is just for error handling
         raise HTTPException(status_code=500, detail=f"Prediction error: {str(e)}")
 
 
-
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host=config.API_HOST, port=config.API_PORT)
 
 
