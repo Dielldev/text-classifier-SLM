@@ -7,11 +7,16 @@ A machine learning REST API for text classification.
 ```
 text-classifier-SLM/
 ├── app.py              # FastAPI REST API application
-├── main.py             # Model training, evaluation & comparison
+├── main.py             # Main training pipeline orchestrator
 ├── config.py           # Configuration and constants
 ├── utils.py            # Text preprocessing utilities
 ├── requirements.txt    # Python dependencies
 ├── README.md          # Project documentation
+├── src/               # Source code modules
+│   ├── preprocessing.py  # Data loading and preprocessing
+│   ├── train.py         # Model training and saving
+│   ├── evaulate.py      # Model evaluation and metrics
+│   └── predict.py       # Prediction and model loading
 ├── data/              # Dataset directory
 │   ├── train.csv      # Training data (120,000 samples)
 │   └── test.csv       # Test data (7,600 samples)
